@@ -225,7 +225,7 @@
     )
 
 (deffunction get-time-string (?time)
-    (return (str-cat (integer (/ ?time 60)) ":" (mod ?time 60)))
+    (return (str-cat (integer (/ ?time 60)) " hrs " (mod ?time 60) " minutes"))
     )
 
 
@@ -250,13 +250,20 @@
         "This path is " (if (eq ?safe YES) then "" else "not ") "safe" crlf)
     )
 
-(deffunction concat$
+(deffunction concatAppend$
     (?list ?new-ele)
     (bind ?length (length$ ?list))
     (bind ?length (+ ?length 1))
     (bind ?new-list (insert$ ?list ?length ?new-ele))
     (return ?new-list)
     )
+
+(deffunction concatPrepend$
+    (?new-ele ?list)
+    (bind ?new-list (insert$ ?list 1 ?new-ele))
+    (return ?new-list)
+    )
+
 
 (defrule recommend-one-stop-answer
     (Answer1
@@ -311,10 +318,10 @@
     (assert (Answer1
             (start ?start)
             (end ?end)
-            (b1_b_time (find_board_time (concat$ $?bef1 ?start) ?b_start ?b_interval ?s_time))
+            (b1_b_time (find_board_time (concatAppend$ $?bef1 ?start) ?b_start ?b_interval ?s_time))
             (changeover_stop ?X)
-            (is_safe (find-route-safety ?bet1 ?bet2))
-            (traffic_intensity (find_traffic ?bet1 ?bet2))
+            (is_safe (find-route-safety (concatAppend$ (concatPrepend$ ?start ?bet1) ?X) (concatAppend$ (concatPrepend$ ?X ?bet2) ?end)))
+            (traffic_intensity (find_traffic (concatAppend$ (concatPrepend$ ?start ?bet1) ?X) (concatAppend$ (concatPrepend$ ?X ?bet2) ?end)))
             (bus1 ?B1)
             (bus2 ?B2)
             )
@@ -333,9 +340,9 @@
     (assert (Answer0
             (start ?start)
             (end ?end)
-            (b_time (find_board_time (concat$ $?bef ?start) ?b_start ?b_interval ?s_time))
-            (is_safe (check_safety (concat$ $?bet ?end)))
-            (traffic_intensity (calc_traffic ?bet))
+            (b_time (find_board_time (concatAppend$ $?bef ?start) ?b_start ?b_interval ?s_time))
+            (is_safe (check_safety (concatPrepend$ ?start(concatAppend$ $?bet ?end))))
+            (traffic_intensity (calc_traffic (concatPrepend$ ?start(concatAppend$ $?bet ?end))))
             (bus ?B)
             )
         )
@@ -343,8 +350,8 @@
 
 (reset)
 
-;(enter_info)
-(assert (Query(start "Shalimar Bagh")(end "Narayana") (is_ac YES) (s_time 820)))
+(enter_info)
+;(assert (Query(start "Shalimar Bagh")(end "Narayana") (is_ac YES) (s_time 820)))
 ;(printout t "SAFETY CHECK: " (check_safety "Narayana" "Punjabi Bagh" "Shakarpur" "Wazirpur" "Azadpur") crlf)
 
 (run)
