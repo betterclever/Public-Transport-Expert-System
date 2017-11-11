@@ -43,12 +43,10 @@
     (slot traffic_intensity (type NUMBER))
     (slot journey_time (type INTEGER)))
 
-(watch all)
-
 (deffacts paths "Path Information"
     (Path (stop1 "Narayana") (stop2 "Punjabi Bagh") (traffic_intensity 67) (is_safe YES) (avg_time 20))
     (Path (stop1 "Inderlok") (stop2 "Punjabi Bagh") (traffic_intensity 23) (is_safe NO) (avg_time 10))
-    (Path (stop1 "Pashchim Vihar") (stop2 "Punjabi Bagh") (traffic_intensity 15) (is_safe YES) (avg_time 5))
+    (Path (stop1 "Paschim Vihar") (stop2 "Punjabi Bagh") (traffic_intensity 15) (is_safe YES) (avg_time 5))
     (Path (stop1 "Shakarpur") (stop2 "Punjabi Bagh") (traffic_intensity 35) (is_safe YES) (avg_time 10))
     (Path (stop1 "Paschim Vihar") (stop2 "Peeragarhi") (traffic_intensity 55) (is_safe YES) (avg_time 15))
     (Path (stop1 "Peeragarhi") (stop2 "Rohini") (traffic_intensity 80) (is_safe NO) (avg_time 10))
@@ -100,10 +98,10 @@
     (bind ?is_ac (readline))
     (printout t crlf "Enter Start Time in format hh:mm" crlf)
     (bind ?s_time (readline))
-    (assert (Query 
-            (start ?b_stop) 
-            (end ?d_stop) 
-            (is_ac (if (eq ?is_ac "YES") then YES else NO)) 
+    (assert (Query
+            (start ?b_stop)
+            (end ?d_stop)
+            (is_ac (if (eq ?is_ac "YES") then YES else NO))
             (s_time (get_time_from_string ?s_time))))
     )
 
@@ -173,7 +171,6 @@
                 )
             )
         )
-    (printout t ?stops1 ?stops2 ?res crlf)
     (return ?res)
     )
 
@@ -185,15 +182,16 @@
 
 (deffunction calc_offset ($?stops)
     (if (= (length$ ?stops) 1) then (return 0))
+    (if (= (length$ ?stops) 0) then (return 0))
     (bind ?offset (time_between (first$ ?stops) (first$ (rest$ ?stops))))
-    (bind ?res (+ ?offset (calc_offset (rest$ ?stops))))
-    (return ?res))
+    (return (+ ?offset (calc_offset (rest$ ?stops))))
+    )
 
 (deffunction find_board_time (?stops_before ?b_start ?b_interval ?s_time)
     (bind ?offset (calc_offset ?stops_before))
     (bind ?fr_time (+ ?b_start ?offset))
-    (bind ?b_time (+ ?fr_time (* (integer (/ (- ?s_time ?fr_time 1) ?b_interval)) ?b_interval)))
-    (return ?b_time))
+    (return (+ ?fr_time (* (+ 1 (integer (/ (- ?s_time ?fr_time 1) ?b_interval))) ?b_interval)))
+    )
 
 
 (defrule low-traffic-intensity
@@ -252,7 +250,13 @@
         "This path is " (if (eq ?safe YES) then "" else "not ") "safe" crlf)
     )
 
-
+(deffunction concat$
+    (?list ?new-ele)
+    (bind ?length (length$ ?list))
+    (bind ?length (+ ?length 1))
+    (bind ?new-list (insert$ ?list ?length ?new-ele))
+    (return ?new-list)
+    )
 
 (defrule recommend-one-stop-answer
     (Answer1
@@ -279,6 +283,13 @@
         "This path is " (if (eq ?safe YES) then "" else "not ") "safe" crlf)
     )
 
+(defrule same-source-dest
+    (Query (start ?start) (end ?end))
+    (test (eq ?start ?end))
+    =>
+    (printout t crlf "Destination and Source are same. You don't need to take a bus." crlf)
+    )
+
 (defrule find_bus_one_change
     
     (Query (start ?start) (end ?end) (is_ac ?is_ac) (s_time ?s_time))
@@ -294,13 +305,13 @@
     (test (not (member$ ?end ?bet1)))
     (test (not (member$ ?start ?bet2)))
     (test (neq ?B1 ?B2))
-    
+    (test (neq ?start ?end))
     =>
     
     (assert (Answer1
             (start ?start)
             (end ?end)
-            (b1_b_time (find_board_time (create$ $?bef1 ?start) ?b_start ?b_interval ?s_time))
+            (b1_b_time (find_board_time (concat$ $?bef1 ?start) ?b_start ?b_interval ?s_time))
             (changeover_stop ?X)
             (is_safe (find-route-safety ?bet1 ?bet2))
             (traffic_intensity (find_traffic ?bet1 ?bet2))
@@ -317,12 +328,13 @@
         (stops $?bef ?start $?bet ?end $?)
         (is_ac ?is_ac) (start_time ?b_start)
         (interval ?b_interval))
+    (test (neq ?start ?end))
     =>
     (assert (Answer0
             (start ?start)
             (end ?end)
-            (b_time (find_board_time (create$ $?bef ?start) ?b_start ?b_interval ?s_time))
-            (is_safe (check_safety ?bet))
+            (b_time (find_board_time (concat$ $?bef ?start) ?b_start ?b_interval ?s_time))
+            (is_safe (check_safety (concat$ $?bet ?end)))
             (traffic_intensity (calc_traffic ?bet))
             (bus ?B)
             )
@@ -331,8 +343,8 @@
 
 (reset)
 
-(enter_info)
-;(assert (Query(start "Adarsh Nagar")(end "Peeragarhi") (is_ac NO) (s_time 610)))
+;(enter_info)
+(assert (Query(start "Shalimar Bagh")(end "Narayana") (is_ac YES) (s_time 820)))
 ;(printout t "SAFETY CHECK: " (check_safety "Narayana" "Punjabi Bagh" "Shakarpur" "Wazirpur" "Azadpur") crlf)
 
 (run)
