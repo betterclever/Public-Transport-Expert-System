@@ -10,7 +10,8 @@
     (slot stop2 (type STRING))
     (slot avg_time (type INTEGER))
     (slot traffic_intensity (type NUMBER))
-    (slot is_safe))
+    (slot is_safe)
+    (slot fare (type INTEGER)))
 
 (deftemplate Query
     (slot start (type STRING))
@@ -28,7 +29,8 @@
     (slot is_safe)
     (slot traffic_desc (type STRING))
     (slot traffic_intensity (type NUMBER))
-    (slot journey_time (type INTEGER)))
+    (slot journey_time (type INTEGER))
+    (slot total_fare (type INTEGER)))
 
 (deftemplate Answer1
     (slot start)
@@ -41,24 +43,25 @@
     (slot b1_b_time (type INTEGER))
     (slot is_safe)
     (slot traffic_intensity (type NUMBER))
-    (slot journey_time (type INTEGER)))
+    (slot journey_time (type INTEGER))
+    (slot total_fare (type INTEGER)))
 
 (deffacts paths "Path Information"
-    (Path (stop1 "Narayana") (stop2 "Punjabi Bagh") (traffic_intensity 67) (is_safe YES) (avg_time 20))
-    (Path (stop1 "Inderlok") (stop2 "Punjabi Bagh") (traffic_intensity 23) (is_safe NO) (avg_time 10))
-    (Path (stop1 "Paschim Vihar") (stop2 "Punjabi Bagh") (traffic_intensity 15) (is_safe YES) (avg_time 5))
-    (Path (stop1 "Shakarpur") (stop2 "Punjabi Bagh") (traffic_intensity 35) (is_safe YES) (avg_time 10))
-    (Path (stop1 "Paschim Vihar") (stop2 "Peeragarhi") (traffic_intensity 55) (is_safe YES) (avg_time 15))
-    (Path (stop1 "Peeragarhi") (stop2 "Rohini") (traffic_intensity 80) (is_safe NO) (avg_time 10))
-    (Path (stop1 "Wazirpur") (stop2 "Rohini") (traffic_intensity 70) (is_safe YES) (avg_time 10))
-    (Path (stop1 "Adarsh Nagar") (stop2 "Rohini") (traffic_intensity 43) (is_safe YES) (avg_time 10))
-    (Path (stop1 "Wazirpur") (stop2 "Shakarpur") (traffic_intensity 30) (is_safe YES) (avg_time 10))
-    (Path (stop1 "Wazirpur") (stop2 "Shalimar Bagh") (traffic_intensity 60) (is_safe NO) (avg_time 10))
-    (Path (stop1 "Wazirpur") (stop2 "Azadpur") (traffic_intensity 60) (is_safe YES) (avg_time 10))
-    (Path (stop1 "Adarsh Nagar") (stop2 "Azadpur") (traffic_intensity 22) (is_safe YES) (avg_time 10))
-    (Path (stop1 "Model Town") (stop2 "Azadpur") (traffic_intensity 30) (is_safe YES) (avg_time 12))
-    (Path (stop1 "Bypass") (stop2 "Azadpur") (traffic_intensity 11) (is_safe NO) (avg_time 10))
-    (Path (stop1 "Bypass") (stop2 "Shalimar Bagh") (traffic_intensity 53) (is_safe YES) (avg_time 10))
+    (Path (stop1 "Narayana") (stop2 "Punjabi Bagh") (traffic_intensity 67) (is_safe YES) (avg_time 20) (fare 10))
+    (Path (stop1 "Inderlok") (stop2 "Punjabi Bagh") (traffic_intensity 23) (is_safe NO) (avg_time 10)(fare 15))
+    (Path (stop1 "Paschim Vihar") (stop2 "Punjabi Bagh") (traffic_intensity 15) (is_safe YES) (avg_time 5)(fare 20))
+    (Path (stop1 "Shakarpur") (stop2 "Punjabi Bagh") (traffic_intensity 35) (is_safe YES) (avg_time 10)(fare 5))
+    (Path (stop1 "Paschim Vihar") (stop2 "Peeragarhi") (traffic_intensity 55) (is_safe YES) (avg_time 15)(fare 20))
+    (Path (stop1 "Peeragarhi") (stop2 "Rohini") (traffic_intensity 80) (is_safe NO) (avg_time 10)(fare 15))
+    (Path (stop1 "Wazirpur") (stop2 "Rohini") (traffic_intensity 70) (is_safe YES) (avg_time 10)(fare 25))
+    (Path (stop1 "Adarsh Nagar") (stop2 "Rohini") (traffic_intensity 43) (is_safe YES) (avg_time 10)(fare 30))
+    (Path (stop1 "Wazirpur") (stop2 "Shakarpur") (traffic_intensity 30) (is_safe YES) (avg_time 10)(fare 40))
+    (Path (stop1 "Wazirpur") (stop2 "Shalimar Bagh") (traffic_intensity 60) (is_safe NO) (avg_time 10)(fare 20))
+    (Path (stop1 "Wazirpur") (stop2 "Azadpur") (traffic_intensity 60) (is_safe YES) (avg_time 10)(fare 35))
+    (Path (stop1 "Adarsh Nagar") (stop2 "Azadpur") (traffic_intensity 22) (is_safe YES) (avg_time 10)(fare 25))
+    (Path (stop1 "Model Town") (stop2 "Azadpur") (traffic_intensity 30) (is_safe YES) (avg_time 12)(fare 5))
+    (Path (stop1 "Bypass") (stop2 "Azadpur") (traffic_intensity 11) (is_safe NO) (avg_time 10)(fare 15))
+    (Path (stop1 "Bypass") (stop2 "Shalimar Bagh") (traffic_intensity 53) (is_safe YES) (avg_time 10)(fare 20))
     )
 
 
@@ -107,8 +110,8 @@
 
 (defquery find-path
     (declare (variables ?stop1 ?stop2))
-    (or (Path (stop1 ?stop1) (stop2 ?stop2) (avg_time ?avg_time) (traffic_intensity ?t_int) (is_safe ?safe))
-        (Path (stop1 ?stop2) (stop2 ?stop1) (avg_time ?avg_time) (traffic_intensity ?t_int) (is_safe ?safe))
+    (or (Path (stop1 ?stop1) (stop2 ?stop2) (avg_time ?avg_time) (traffic_intensity ?t_int) (is_safe ?safe) (fare ?fare))
+        (Path (stop1 ?stop2) (stop2 ?stop1) (avg_time ?avg_time) (traffic_intensity ?t_int) (is_safe ?safe) (fare ?fare))
         )
     )
 
@@ -180,6 +183,28 @@
     (bind ?time (?result getInt avg_time))
     (return ?time))
 
+(deffunction calc_jtime (?list)
+    (if (= (length$ ?list) 1) then (return 0))
+    (bind ?result (run-query* find-path (first$ ?list) (first$ (rest$ ?list))))
+    (bind ?path (?result next))
+    (bind ?time1 (+ (?result getInt avg_time) (calc_jtime (rest$ ?list))))
+    (return ?time1)
+    )
+
+(deffunction calc_fare1 (?list)
+    (if (= (length$ ?list) 1) then (return 0))
+    (bind ?result (run-query* find-path (first$ ?list) (first$ (rest$ ?list))))
+    (bind ?path (?result next))
+    (bind ?fare1 (+ (?result getInt fare) (calc_fare1 (rest$ ?list))))
+    (return ?fare1)
+    )
+
+(deffunction calc_fare (?list ?is_ac)
+    (bind ?fare1 (calc_fare1 ?list))
+    (bind ?fare2 (if (eq ?is_ac YES) then (* ?fare1 2) else ?fare1))
+    (return ?fare2)
+    )
+
 (deffunction calc_offset ($?stops)
     (if (= (length$ ?stops) 1) then (return 0))
     (if (= (length$ ?stops) 0) then (return 0))
@@ -225,7 +250,7 @@
     )
 
 (deffunction get-time-string (?time)
-    (return (str-cat (integer (/ ?time 60)) " hrs " (mod ?time 60) " minutes"))
+    (return (str-cat (integer (/ ?time 60)) " hrs " (mod ?time 60) ""))
     )
 
 
@@ -238,6 +263,8 @@
         (traffic_desc ?desc)
         (traffic_intensity ?tr)
         (bus ?B)
+        (total_fare ?tfare)
+        (journey_time ?jtime)
         )
     (test (neq ?desc nil))
     =>
@@ -247,8 +274,12 @@
         " at " (get-time-string ?b_time)
         " from " ?start " to " ?end
         ". " crlf ?desc " traffic is expected on this route. " crlf
-        "This path is " (if (eq ?safe YES) then "" else "not ") "safe" crlf)
+        "This path is " (if (eq ?safe YES) then "" else "not ") "safe" crlf
+        "Total fare is " ?tfare " rupees" crlf
+        "Total journey time " ?jtime " minutes"crlf)
     )
+
+
 
 (deffunction concatAppend$
     (?list ?new-ele)
@@ -276,6 +307,8 @@
         (bus1 ?B1)
         (bus2 ?B2)
         (changeover_stop ?cstop)
+        (total_fare ?tfare)
+        (journey_time ?jtime)
         )
     (test (neq ?desc nil))
     =>
@@ -287,7 +320,9 @@
         " then take " ?B2
         " from " ?cstop " to " ?end
         ". " crlf ?desc " traffic is expected on this route. " crlf
-        "This path is " (if (eq ?safe YES) then "" else "not ") "safe" crlf)
+        "This path is " (if (eq ?safe YES) then "" else "not ") "safe" crlf
+        "Total fare is " ?tfare " rupees"crlf
+        "Total journey time " ?jtime " minutes" crlf)
     )
 
 (defrule same-source-dest
@@ -320,8 +355,13 @@
             (end ?end)
             (b1_b_time (find_board_time (concatAppend$ $?bef1 ?start) ?b_start ?b_interval ?s_time))
             (changeover_stop ?X)
-            (is_safe (find-route-safety (concatAppend$ (concatPrepend$ ?start ?bet1) ?X) (concatAppend$ (concatPrepend$ ?X ?bet2) ?end)))
-            (traffic_intensity (find_traffic (concatAppend$ (concatPrepend$ ?start ?bet1) ?X) (concatAppend$ (concatPrepend$ ?X ?bet2) ?end)))
+            (is_safe (find-route-safety (concatAppend$ (concatPrepend$ ?start ?bet1) ?X) 
+                    (concatAppend$ (concatPrepend$ ?X ?bet2) ?end)))
+            (traffic_intensity (find_traffic (concatAppend$ (concatPrepend$ ?start ?bet1) ?X) 
+                    (concatAppend$ (concatPrepend$ ?X ?bet2) ?end)))
+            (total_fare  (+ (calc_fare (concatPrepend$ ?start (concatAppend$ $?bet1 ?X)) ?is_ac)
+                 (calc_fare (concatPrepend$ ?X (concatAppend$ $?bet2 ?end)) ?is_ac)))
+            (journey_time (+ (calc_jtime (concatAppend$ (concatPrepend$ ?start ?bet1) ?X))(calc_jtime (concatAppend$ (concatPrepend$ ?X ?bet2) ?end))))
             (bus1 ?B1)
             (bus2 ?B2)
             )
@@ -343,6 +383,8 @@
             (b_time (find_board_time (concatAppend$ $?bef ?start) ?b_start ?b_interval ?s_time))
             (is_safe (check_safety (concatPrepend$ ?start(concatAppend$ $?bet ?end))))
             (traffic_intensity (calc_traffic (concatPrepend$ ?start(concatAppend$ $?bet ?end))))
+            (total_fare (calc_fare (concatPrepend$ ?start (concatAppend$ $?bet ?end)) ?is_ac))
+            (journey_time (calc_jtime (concatPrepend$ ?start(concatAppend$ $?bet ?end))))
             (bus ?B)
             )
         )
