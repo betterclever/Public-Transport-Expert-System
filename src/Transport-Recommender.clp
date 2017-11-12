@@ -47,21 +47,21 @@
     (slot total_fare (type INTEGER)))
 
 (deffacts paths "Path Information"
-    (Path (stop1 "Narayana") (stop2 "Punjabi Bagh") (traffic_intensity 67) (is_safe YES) (avg_time 20) (fare 10))
-    (Path (stop1 "Inderlok") (stop2 "Punjabi Bagh") (traffic_intensity 23) (is_safe NO) (avg_time 10)(fare 15))
-    (Path (stop1 "Paschim Vihar") (stop2 "Punjabi Bagh") (traffic_intensity 15) (is_safe YES) (avg_time 5)(fare 20))
+    (Path (stop1 "Narayana") (stop2 "Punjabi Bagh") (traffic_intensity 67) (is_safe YES) (avg_time 20) (fare 5))
+    (Path (stop1 "Inderlok") (stop2 "Punjabi Bagh") (traffic_intensity 23) (is_safe NO) (avg_time 10)(fare 5))
+    (Path (stop1 "Paschim Vihar") (stop2 "Punjabi Bagh") (traffic_intensity 15) (is_safe YES) (avg_time 5)(fare 5))
     (Path (stop1 "Shakarpur") (stop2 "Punjabi Bagh") (traffic_intensity 35) (is_safe YES) (avg_time 10)(fare 5))
-    (Path (stop1 "Paschim Vihar") (stop2 "Peeragarhi") (traffic_intensity 55) (is_safe YES) (avg_time 15)(fare 20))
-    (Path (stop1 "Peeragarhi") (stop2 "Rohini") (traffic_intensity 80) (is_safe NO) (avg_time 10)(fare 15))
-    (Path (stop1 "Wazirpur") (stop2 "Rohini") (traffic_intensity 70) (is_safe YES) (avg_time 10)(fare 25))
-    (Path (stop1 "Adarsh Nagar") (stop2 "Rohini") (traffic_intensity 43) (is_safe YES) (avg_time 10)(fare 30))
-    (Path (stop1 "Wazirpur") (stop2 "Shakarpur") (traffic_intensity 30) (is_safe YES) (avg_time 10)(fare 40))
-    (Path (stop1 "Wazirpur") (stop2 "Shalimar Bagh") (traffic_intensity 60) (is_safe NO) (avg_time 10)(fare 20))
-    (Path (stop1 "Wazirpur") (stop2 "Azadpur") (traffic_intensity 60) (is_safe YES) (avg_time 10)(fare 35))
-    (Path (stop1 "Adarsh Nagar") (stop2 "Azadpur") (traffic_intensity 22) (is_safe YES) (avg_time 10)(fare 25))
+    (Path (stop1 "Paschim Vihar") (stop2 "Peeragarhi") (traffic_intensity 55) (is_safe YES) (avg_time 15)(fare 6))
+    (Path (stop1 "Peeragarhi") (stop2 "Rohini") (traffic_intensity 80) (is_safe NO) (avg_time 10)(fare 10))
+    (Path (stop1 "Wazirpur") (stop2 "Rohini") (traffic_intensity 70) (is_safe YES) (avg_time 10)(fare 8))
+    (Path (stop1 "Adarsh Nagar") (stop2 "Rohini") (traffic_intensity 43) (is_safe YES) (avg_time 10)(fare 10))
+    (Path (stop1 "Wazirpur") (stop2 "Shakarpur") (traffic_intensity 30) (is_safe YES) (avg_time 10)(fare 5))
+    (Path (stop1 "Wazirpur") (stop2 "Shalimar Bagh") (traffic_intensity 60) (is_safe NO) (avg_time 10)(fare 5))
+    (Path (stop1 "Wazirpur") (stop2 "Azadpur") (traffic_intensity 60) (is_safe YES) (avg_time 10)(fare 8))
+    (Path (stop1 "Adarsh Nagar") (stop2 "Azadpur") (traffic_intensity 22) (is_safe YES) (avg_time 10)(fare 6))
     (Path (stop1 "Model Town") (stop2 "Azadpur") (traffic_intensity 30) (is_safe YES) (avg_time 12)(fare 5))
-    (Path (stop1 "Bypass") (stop2 "Azadpur") (traffic_intensity 11) (is_safe NO) (avg_time 10)(fare 15))
-    (Path (stop1 "Bypass") (stop2 "Shalimar Bagh") (traffic_intensity 53) (is_safe YES) (avg_time 10)(fare 20))
+    (Path (stop1 "Bypass") (stop2 "Azadpur") (traffic_intensity 11) (is_safe NO) (avg_time 10)(fare 10))
+    (Path (stop1 "Bypass") (stop2 "Shalimar Bagh") (traffic_intensity 53) (is_safe YES) (avg_time 10)(fare 10))
     )
 
 
@@ -201,7 +201,7 @@
 
 (deffunction calc_fare (?list ?is_ac)
     (bind ?fare1 (calc_fare1 ?list))
-    (bind ?fare2 (if (eq ?is_ac YES) then (* ?fare1 2) else ?fare1))
+    (bind ?fare2 (if (eq ?is_ac YES) then (integer (* ?fare1 1.5)) else ?fare1))
     (return ?fare2)
     )
 
@@ -333,7 +333,6 @@
     )
 
 (defrule find_bus_one_change
-    
     (Query (start ?start) (end ?end) (is_ac ?is_ac) (s_time ?s_time))
     (Bus
         (name ?B1)
@@ -392,8 +391,8 @@
 
 (reset)
 
-(enter_info)
-;(assert (Query(start "Shalimar Bagh")(end "Narayana") (is_ac YES) (s_time 820)))
+;(enter_info)
+(assert (Query(start "Shalimar Bagh")(end "Narayana") (is_ac YES) (s_time 10020)))
 ;(printout t "SAFETY CHECK: " (check_safety "Narayana" "Punjabi Bagh" "Shakarpur" "Wazirpur" "Azadpur") crlf)
 
 (run)
